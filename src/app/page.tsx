@@ -17,9 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
+  longUrl: z.string().url(),
+  shortUrl: z.string().max(7)
 });
 
 function UrlForm() {
@@ -28,7 +27,8 @@ function UrlForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      longUrl: "",
+      shortUrl: "",
     },
   });
 
@@ -39,26 +39,59 @@ function UrlForm() {
     console.log(values);
   }
 
+  function copyToClipboard() {
+    console.log("copy to clipboard");
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="username"
+          name="longUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Long Url</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input placeholder="https://example.com" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
+                This is the long url that you want to shorten.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <FormField
+          control={form.control}
+          name="shortUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Short Url</FormLabel>
+
+              <FormControl>
+                <div className="flex flex-row gap-2 items-center">
+                  <span>
+                    mini-url-nu.vercel.app/
+                  </span>
+                  <Input
+                    style={{ flex: 1 }}
+                    placeholder="short-url"
+                    {...field}
+                  />
+                  <Button type="button" onClick={copyToClipboard}>
+                    Copy
+                  </Button>
+                </div>
+              </FormControl>
+              <FormDescription>
+                This is the short url that you want to shorten.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Generate Short Url</Button>
       </form>
     </Form>
   );
