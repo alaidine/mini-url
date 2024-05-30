@@ -15,13 +15,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import supabase from "../db/supabase";
+import { useEffect, useState } from "react";
 
 const formSchema = z.object({
   longUrl: z.string().url(),
-  shortUrl: z.string().max(7)
+  shortUrl: z.string().max(7),
+  uuid: z.string().uuid().optional(),
 });
 
 function UrlForm() {
+  const [user, setUser] = useState<any>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
   // ...
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -29,14 +35,59 @@ function UrlForm() {
     defaultValues: {
       longUrl: "",
       shortUrl: "",
+      uuid: user?.id,
     },
   });
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: user } = await supabase.auth.getUser();
+      setUser(user.user);
+
+      form.setValue("uuid", user.user?.id);
+    };
+
+    // Fetch the user data when the component mounts
+    fetchUser();
+
+    // Set up a listener for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        // Re-fetch the user data whenever the auth state changes
+        fetchUser();
+      }
+    );
+
+    // Cleanup the listener when the component is unmounted
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [form]);
+
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsGenerating(true);
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
+
     console.log(values);
+
+    fetch("/generate-url", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setIsGenerating(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setIsGenerating(false);
+      });
   }
 
   function copyToClipboard() {
@@ -71,9 +122,7 @@ function UrlForm() {
 
               <FormControl>
                 <div className="flex flex-row gap-2 items-center">
-                  <span>
-                    mini-url-nu.vercel.app/
-                  </span>
+                  <span>mini-url-nu.vercel.app/</span>
                   <Input
                     style={{ flex: 1 }}
                     placeholder="short-url"
@@ -91,7 +140,9 @@ function UrlForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Generate Short Url</Button>
+        <Button type="submit" disabled={isGenerating}>
+          Generate Short Url
+        </Button>
       </form>
     </Form>
   );

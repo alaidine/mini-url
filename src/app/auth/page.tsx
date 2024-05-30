@@ -7,9 +7,8 @@ import supabase from "../../db/supabase";
 import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
-
   const router = useRouter();
-  
+
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
