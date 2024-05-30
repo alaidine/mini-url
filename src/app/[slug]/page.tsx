@@ -1,6 +1,14 @@
 "use client";
 
-import { notFound, useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
+
+function NotFound() {
+  return (
+    <div className="fixed top-0 left-0 z-50 flex flex-col items-center justify-center h-screen w-screen bg-gray-50">
+      Not Found
+    </div>
+  );
+}
 
 export default function Page({ params }: { params: { slug: string } }) {
   // TODO: Fetch url from database and redirect to it and if not found, show 404 page
@@ -20,7 +28,12 @@ export default function Page({ params }: { params: { slug: string } }) {
     })
     .catch((err) => {
       console.log(err);
+      return <NotFound />;
     });
 
-  return <div>Loading...</div>;
+  return (
+    <div className="fixed top-0 left-0 z-50 flex flex-col items-center justify-center h-screen w-screen bg-gray-50">
+      Loading...
+    </div>
+  );
 }

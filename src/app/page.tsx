@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { insertUrls } from "@/db/schema";
+
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -72,12 +74,20 @@ function UrlForm() {
 
     console.log(values);
 
+    const url = insertUrls.parse({
+      longUrl: values.longUrl,
+      shortUrl: values.shortUrl,
+      userId: values.uuid,
+    });
+
+    console.log(url);
+
     fetch("/generate-url", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(values),
+      body: JSON.stringify(url),
     })
       .then((res) => res.json())
       .then((data) => {
