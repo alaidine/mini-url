@@ -27,8 +27,10 @@ const formSchema = z.object({
 });
 
 function UrlForm() {
+  const base = "https://mini-url-nu.vercel.app/";
   const [user, setUser] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [shortUrl, setShortUrl] = useState("");
 
   // ...
   // 1. Define your form.
@@ -101,6 +103,7 @@ function UrlForm() {
   }
 
   function copyToClipboard() {
+    navigator.clipboard.writeText(base + shortUrl);
     console.log("copy to clipboard");
   }
 
@@ -137,8 +140,9 @@ function UrlForm() {
                     style={{ flex: 1 }}
                     placeholder="short-url"
                     {...field}
+                    onChangeCapture={e => setShortUrl(e.currentTarget.value)}
                   />
-                  <Button type="button" onClick={copyToClipboard}>
+                  <Button type="button" onClick={() => copyToClipboard()}>
                     Copy
                   </Button>
                 </div>
